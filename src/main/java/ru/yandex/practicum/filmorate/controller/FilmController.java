@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.Exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.validate.ValidateFilmData;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +17,7 @@ import java.util.List;
 @Slf4j
 public class FilmController {
 
-    private HashMap<Integer,Film> films = new HashMap<>();
-    private static final LocalDate dateFirstFilm = LocalDate.of(1895, 12, 28);
+    private final HashMap<Integer,Film> films = new HashMap<>();
 
     private static int id = 0;
 
@@ -24,42 +26,35 @@ public class FilmController {
         return new ArrayList<>(films.values());
     }
 
-    @PostMapping(value = "/films")
+    @PostMapping("/films")
     @ResponseBody
-    public Film createFilm(@RequestBody Film film) throws ValidationException {
-        if(checkFilm(film)) {
+    public ResponseEntity<Film> createFilm(@RequestBody Film film) {
+        if(new ValidateFilmData(film).checkAllData()) {
             log.info("Получен запрос к эндпоинту: POST /films");
             film.setId(getId());
             films.put(film.getId(), film);
-            return film;
+            return new ResponseEntity<>(film, HttpStatus.CREATED);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
         }
     }
 
-    @PutMapping(value = "/films")
-    public Film updateFilm(@RequestBody Film film) throws ValidationException {
-        if(checkFilm(film) && film.getId() > 0) {
+    @PutMapping("/films")
+    @ResponseBody
+    public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
+        if(new ValidateFilmData(film).checkAllData() && film.getId() > 0) {
             log.info("Получен запрос к эндпоинту: PUT /films");
             films.put(film.getId(), film);
-            return film;
+            return new ResponseEntity<>(film, HttpStatus.OK);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
         }
     }
-
-    public boolean checkFilm(Film film) {
-        boolean isName = !film.getName().isBlank();
-        boolean isDescription = film.getDescription().length() <= 200;
-        boolean isDuration = film.getDuration() > 0;
-        boolean isReleaseDate = film.getReleaseDate().isAfter(dateFirstFilm);
-        if(isName && isDescription && isDuration && isReleaseDate) {
-            return true;
-        } else {
-            return false;
-        }
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<String> handleException(ValidationException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public int getId() {
