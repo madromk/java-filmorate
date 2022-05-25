@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.json.GsonJsonParser;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.Exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.validate.ValidateUserData;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,46 +25,40 @@ public class UserController {
 
     @PostMapping(value = "/users")
     @ResponseBody
-    public User createUser(@RequestBody User user) throws ValidationException {
+    public ResponseEntity<User> createUser(@RequestBody User user) {
         if(user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
-        if(checkUser(user)) {
+        if(new ValidateUserData(user).checkAllData()) {
             user.setId(getId());
             users.put(user.getId(), user);
             log.info("Получен запрос к эндпоинту: POST /users" + user);
-            return user;
+            return new ResponseEntity<>(user, HttpStatus.CREATED);
         } else {
-            log.warn("Запрос к эндпоинту POST /users не обработан. " +
-                    "Введеные данные о пользователе не удовлетворяют условиям");
+            log.warn("Запрос к эндпоинту POST /users не обработан.");
             throw new ValidationException("Одно или несколько условий не выполняются");
         }
     }
     @PutMapping(value = "/users")
     @ResponseBody
-    public User updateUser(@RequestBody User user) throws ValidationException {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
         if(user.getName().isEmpty()) {
             user.setName(user.getEmail());
         }
-        if(checkUser(user) && user.getId() > 0) {
+        if(new ValidateUserData(user).checkAllData() && user.getId() > 0) {
             log.info("Получен запрос к эндпоинту: PUT /users");
             users.put(user.getId(), user);
-            return user;
+            return new ResponseEntity<>(user, HttpStatus.OK);
         } else {
-            log.warn("Запрос к эндпоинту PUT /users не обработан. " +
-                    "Введеные данные о пользователе не удовлетворяют условиям");
+            log.warn("Запрос к эндпоинту PUT /users не обработан.");
             throw new ValidationException("Одно или несколько условий не выполняются");
         }
     }
-    public boolean checkUser(User user) {
-        boolean isEmail = !user.getEmail().isEmpty() && user.getEmail().contains("@");
-        boolean isLogin = !user.getLogin().isEmpty() && !user.getLogin().contains(" ");
-        boolean isBirthday = user.getBirthday().isBefore(LocalDate.now());
-        if(isEmail && isLogin && isBirthday) {
-            return true;
-        } else {
-            return false;
-        }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<String> handleException(ValidationException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public int getId() {
