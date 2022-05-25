@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.validate;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.model.User;
@@ -6,11 +6,11 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 
 @Slf4j
-public class CheckUserData {
+public class ValidateUserData {
 
     private final User user;
 
-    public CheckUserData(User user) {
+    public ValidateUserData(User user) {
         this.user = user;
     }
 
