@@ -17,7 +17,15 @@ public class ValidateFilmData {
         this.film = film;
     }
 
-    public boolean checkName() {
+    public boolean checkAllData() {
+        if(isCorrectName() && isCorrectLengthDescription() && isCorrectReleaseDate() && isPositiveDuration()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isCorrectName() {
         if(!film.getName().isBlank()) {
             return true;
         } else {
@@ -26,7 +34,7 @@ public class ValidateFilmData {
         }
     }
 
-    public boolean checkLengthDescription() {
+    private boolean isCorrectLengthDescription() {
         if(film.getDescription().length() <= maxLengthDescription) {
             return true;
         } else {
@@ -37,7 +45,7 @@ public class ValidateFilmData {
         }
     }
 
-    public boolean checkReleaseDate() {
+    private boolean isCorrectReleaseDate() {
         if(film.getReleaseDate().isAfter(dateFirstFilm)) {
             return true;
         } else {
@@ -47,19 +55,11 @@ public class ValidateFilmData {
         }
     }
 
-    public boolean checkPositiveDuration() {
+    private boolean isPositiveDuration() {
         if(film.getDuration() > 0) {
             return true;
         } else {
             log.warn("Ошибка во входных данных фильма. Продолжительность фильма должна быть положительной.");
-            return false;
-        }
-    }
-
-    public boolean checkAllData() {
-        if(checkName() && checkLengthDescription() && checkReleaseDate() && checkPositiveDuration()) {
-            return true;
-        } else {
             return false;
         }
     }
