@@ -14,7 +14,15 @@ public class ValidateUserData {
         this.user = user;
     }
 
-    public boolean checkEmail() {
+    public boolean checkAllData() {
+        if(isCorrectEmail() && isCorrectLogin() && isCorrectBirthday()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isCorrectEmail() {
         if(!user.getEmail().isEmpty() && user.getEmail().contains("@")) {
             return true;
         } else {
@@ -23,7 +31,7 @@ public class ValidateUserData {
         }
     }
 
-    public boolean checkLogin() {
+    private boolean isCorrectLogin() {
         if(!user.getLogin().isEmpty() && !user.getLogin().contains(" ")) {
             return true;
         } else {
@@ -32,19 +40,11 @@ public class ValidateUserData {
         }
     }
 
-    public boolean checkBirthday() {
+    private boolean isCorrectBirthday() {
         if(user.getBirthday().isBefore(LocalDate.now())) {
             return true;
         } else {
             log.warn("Ошибка во входных данных. Дата рождения указана в будующем");
-            return false;
-        }
-    }
-
-    public boolean checkAllData() {
-        if(checkEmail() && checkLogin() && checkBirthday()) {
-            return true;
-        } else {
             return false;
         }
     }
