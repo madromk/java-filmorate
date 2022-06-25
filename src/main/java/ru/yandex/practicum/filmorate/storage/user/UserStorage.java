@@ -8,6 +8,6 @@ public interface UserStorage {
     List<User> findAllUsers();
     void addUser(User user);
     void updateUser(User user);
-    User getUserById(String id);
-    boolean isContainsUser(String id);
+    User getUserById(int id);
+    boolean isContainsUser(int id);
 }
