@@ -20,10 +20,4 @@ public class Film {
     @Builder.Default
     private Set<Integer> amountLikes = new HashSet<>();
 
-    public void addLike(int idUser) {
-        amountLikes.add(idUser);
-    }
-    public void removeLike(int idUser) {
-        amountLikes.remove(idUser);
-    }
 }
