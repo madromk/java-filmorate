@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.validate.ValidateFilmData;
 
 import java.util.HashSet;
@@ -19,13 +17,12 @@ import java.util.List;
 @RestController
 @Slf4j
 public class FilmController {
-    private static final String TEN_POPULAR_FILMS = "10";
+    private static final String POPULAR_FILMS = "10";
     private final FilmService filmService;
-    private final FilmStorage filmStorage;
+
     @Autowired
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
-        this.filmStorage = filmService.getFilmStorage();
     }
 
     private static int id = 0;
@@ -34,17 +31,17 @@ public class FilmController {
     @ResponseBody
     public List<Film> findAllFilms() {
         log.info("Получен запрос к эндпоинту: GET /films");
-        return filmStorage.findAllFilms();
+        return filmService.findAllFilms();
     }
 
     @GetMapping("/films/{id}")
     @ResponseBody
-    public Film getFilmByID(@PathVariable String id) {
+    public Film getFilmByID(@PathVariable("id") int id) {
         log.info("Получен запрос к эндпоинту: GET /films/{id}");
-        if(!filmStorage.isContainsFilms(id)) {
+        if(!filmService.isContainsFilms(id)) {
             throw new InputDataException("Фильм с таким id не найден");
         }
-        return filmStorage.getFilmById(id);
+        return filmService.getFilmById(id);
     }
 
     @GetMapping("/films/popular")
@@ -54,7 +51,7 @@ public class FilmController {
         if(count != null) {
             return filmService.getPopularFilms(count);
         } else {
-            return filmService.getPopularFilms(TEN_POPULAR_FILMS);
+            return filmService.getPopularFilms(POPULAR_FILMS);
         }
     }
 
@@ -67,7 +64,7 @@ public class FilmController {
         if(new ValidateFilmData(film).checkAllData()) {
             log.info("Получен запрос к эндпоинту: POST /films");
             film.setId(getId());
-            filmStorage.addFilm(film);
+            filmService.addFilm(film);
             return new ResponseEntity<>(film, HttpStatus.CREATED);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
@@ -81,12 +78,12 @@ public class FilmController {
         if(film.getAmountLikes() == null) {
             film.setAmountLikes(new HashSet<>());
         }
-        if(!filmStorage.isContainsFilms(String.valueOf(film.getId()))) {
+        if(!filmService.isContainsFilms(film.getId())) {
             throw new InputDataException("Фильм c таким id не найден");
         }
         if(new ValidateFilmData(film).checkAllData() && film.getId() > 0) {
             log.info("Получен запрос к эндпоинту: PUT /films обновление фильма");
-            filmStorage.updateFilm(film);
+            filmService.updateFilm(film);
             return new ResponseEntity<>(film, HttpStatus.OK);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
@@ -95,24 +92,25 @@ public class FilmController {
     }
 
     @PutMapping("/films/{id}/like/{userId}")
-    public void addLike(@PathVariable String id, @PathVariable String userId) {
+    public void addLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
         log.info("Получен запрос к эндпоинту: PUT /films добавление лайка к фильму " + id + ", пользователя " + userId);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
-    public void deleteLike(@PathVariable String id, @PathVariable String userId) {
+    public void deleteLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
         log.info("Получен запрос к эндпоинту: DELETE /films добавление лайка к фильму " + id + ", " +
                 "пользователя " + userId);
-        if(!filmStorage.isContainsFilms(id)) {
+        if(!filmService.isContainsFilms(id)) {
             log.warn("Запрос к эндпоинту DELETE не обработан. Фильм с таким id не найден. id = " + id);
             throw new InputDataException("Фильм с таким id не найден");
         }
-        if(Integer.parseInt(userId) < 0) {
+        if(userId < 0) {
             throw new InputDataException("Пользователь с таким id не найден");
         }
         filmService.removeLike(id, userId);
     }
+
     @ExceptionHandler
     public ResponseEntity<String> handleIncorrectValidation(ValidationException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
