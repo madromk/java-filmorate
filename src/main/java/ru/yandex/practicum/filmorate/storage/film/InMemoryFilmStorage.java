@@ -8,13 +8,12 @@ import java.util.*;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private final HashMap<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
 
 
     @Override
-    public Film getFilmById(String id) {
-        int filmId = Integer.parseInt(id);
-        return films.get(filmId);
+    public Film getFilmById(int id) {
+        return films.get(id);
     }
     @Override
     public List<Film> findAllFilms() {
@@ -32,7 +31,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public boolean isContainsFilms(String id) {
-        return films.containsKey(Integer.parseInt(id));
+    public boolean isContainsFilms(int id) {
+        return films.containsKey(id);
     }
 }
