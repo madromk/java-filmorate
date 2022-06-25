@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validate.ValidateUserData;
 
 import java.util.HashSet;
@@ -21,39 +19,38 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final UserStorage userStorage;
+
     private static int id = 0;
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
-        this.userStorage = userService.getUserStorage();
     }
 
     @GetMapping("/users")
     public List<User> findAllUsers() {
         log.info("Получен запрос к эндпоинту: GET /users");
-        return userStorage.findAllUsers();
+        return userService.findAllUsers();
     }
 
     @GetMapping("/users/{id}")
-    public User getUserById(@PathVariable String id) {
+    public User getUserById(@PathVariable("id") int id) {
         log.info("Получен запрос к эндпоинту: GET /users/{id}");
-        if(!userStorage.isContainsUser(id)) {
+        if(!userService.isContainsUser(id)) {
             log.warn("Пользователь с таким id не найден, id=" + id);
             throw new InputDataException("Пользователь с таким id не найден");
         }
-        return userStorage.getUserById(id);
+        return userService.getUserById(id);
     }
 
     @GetMapping("/users/{id}/friends")
-    public List<User> getAllFriends(@PathVariable String id) {
+    public List<User> getAllFriends(@PathVariable("id") int id) {
         log.info("Получен запрос к эндпоинту: GET /users/{id}/friends");
         return userService.getAllFriend(id);
     }
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public List<User> getMutualFriends(@PathVariable String id, @PathVariable String otherId) {
+    public List<User> getMutualFriends(@PathVariable("id") int id, @PathVariable("otherId") int otherId) {
         log.info("Получен запрос к эндпоинту: GET /users/{id}/friends/common/{otherId}");
-        if (!userStorage.isContainsUser(id) || !userStorage.isContainsUser(otherId)) {
+        if (!userService.isContainsUser(id) || !userService.isContainsUser(otherId)) {
             log.warn("Пользователь с таким id не найден, id1=" + id + ", id2=" + otherId);
             throw new InputDataException("Один из двух друзей не найден по своему id");
         }
@@ -72,7 +69,7 @@ public class UserController {
         }
         if(new ValidateUserData(user).checkAllData()) {
             user.setId(getId());
-            userStorage.addUser(user);
+            userService.addUser(user);
             return new ResponseEntity<>(user, HttpStatus.CREATED);
         } else {
             log.warn("Запрос к эндпоинту POST /users не обработан.");
@@ -84,8 +81,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         log.info("Получен запрос к эндпоинту: PUT /users");
-        String id = String.valueOf(user.getId());
-        if(!userStorage.isContainsUser(id)) {
+        if(!userService.isContainsUser(user.getId())) {
             throw new InputDataException("Пользователь с таким id не найден");
         }
         if(user.getFriends() == null) {
@@ -95,7 +91,7 @@ public class UserController {
             user.setName(user.getEmail());
         }
         if(new ValidateUserData(user).checkAllData() && user.getId() > 0) {
-            userStorage.updateUser(user);
+            userService.updateUser(user);
             return new ResponseEntity<>(user, HttpStatus.OK);
         } else {
             log.warn("Запрос к эндпоинту PUT /users не обработан.");
@@ -103,9 +99,9 @@ public class UserController {
         }
     }
     @PutMapping("/users/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable String id, @PathVariable String friendId) {
+    public void addFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
         log.info("Получен запрос к эндпоинту: PUT /users/{id}/friends/{friendId}");
-        if(!userStorage.isContainsUser(id) || !userStorage.isContainsUser(friendId)) {
+        if(!userService.isContainsUser(id) || !userService.isContainsUser(friendId)) {
             log.warn("Один или оба пользователя не найдены в базе данных по id; id1=" + id + ", id2=" +friendId);
             throw new InputDataException("Один или оба пользователя не найдены");
         }
@@ -113,7 +109,7 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable String id, @PathVariable String friendId) {
+    public void deleteFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
         log.info("Получен запрос к эндпоинту: DELETE /users/{id}/friends/{friendId}");
         userService.deleteFriend(id, friendId);
     }
