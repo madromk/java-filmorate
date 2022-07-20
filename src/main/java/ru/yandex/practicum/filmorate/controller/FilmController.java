@@ -7,12 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validate.ValidateFilmData;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -25,8 +26,6 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    private static int id = 0;
-
     @GetMapping("/films")
     @ResponseBody
     public List<Film> findAllFilms() {
@@ -38,10 +37,21 @@ public class FilmController {
     @ResponseBody
     public Film getFilmByID(@PathVariable("id") int id) {
         log.info("Получен запрос к эндпоинту: GET /films/{id}");
-        if(!filmService.isContainsFilms(id)) {
-            throw new InputDataException("Фильм с таким id не найден");
-        }
         return filmService.getFilmById(id);
+    }
+
+    @GetMapping("/genres/{id}")
+    @ResponseBody
+    public Genre getGenresById(@PathVariable("id") int id) {
+        log.info("Получен запрос к эндпоинту GET /genres/{id}");
+        return filmService.getGenreById(id);
+    }
+
+    @GetMapping("/mpa/{id}")
+    @ResponseBody
+    public Mpa getMpaRatingById(@PathVariable("id") int id) {
+        log.info("Получен запрос к эндпоинту GET /mpa/{id}");
+        return filmService.getRatingById(id);
     }
 
     @GetMapping("/films/popular")
@@ -55,6 +65,20 @@ public class FilmController {
         }
     }
 
+    @GetMapping("/genres")
+    @ResponseBody
+    public List<Genre> getGenres() {
+        log.info("Получен запрос к эндпоинту: GET /genres");
+        return filmService.findAllGenres();
+    }
+
+    @GetMapping("/mpa")
+    @ResponseBody
+    public List<Mpa> getMpaRating() {
+        log.info("Получен запрос к эндпоинту: GET /mpa");
+        return filmService.findAllRatings();
+    }
+
     @PostMapping("/films")
     @ResponseBody
     public ResponseEntity<Film> createFilm(@RequestBody Film film) {
@@ -63,9 +87,7 @@ public class FilmController {
         }
         if(new ValidateFilmData(film).checkAllData()) {
             log.info("Получен запрос к эндпоинту: POST /films");
-            film.setId(getId());
-            filmService.addFilm(film);
-            return new ResponseEntity<>(film, HttpStatus.CREATED);
+            return new ResponseEntity<>(filmService.addFilm(film), HttpStatus.CREATED);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
@@ -99,15 +121,8 @@ public class FilmController {
 
     @DeleteMapping("/films/{id}/like/{userId}")
     public void deleteLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
-        log.info("Получен запрос к эндпоинту: DELETE /films добавление лайка к фильму " + id + ", " +
+        log.info("Получен запрос к эндпоинту: DELETE /films удаление лайка к фильму " + id + ", " +
                 "пользователя " + userId);
-        if(!filmService.isContainsFilms(id)) {
-            log.warn("Запрос к эндпоинту DELETE не обработан. Фильм с таким id не найден. id = " + id);
-            throw new InputDataException("Фильм с таким id не найден");
-        }
-        if(userId < 0) {
-            throw new InputDataException("Пользователь с таким id не найден");
-        }
         filmService.removeLike(id, userId);
     }
 
@@ -125,8 +140,4 @@ public class FilmController {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    public int getId() {
-        this.id++;
-        return id;
-    }
 }

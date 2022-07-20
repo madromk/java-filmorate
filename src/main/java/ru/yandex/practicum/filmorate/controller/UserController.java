@@ -20,7 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
-    private static int id = 0;
+
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
@@ -58,7 +58,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    @ResponseBody
+    //@ResponseBody
     public ResponseEntity<User> createUser(@RequestBody User user) {
         log.info("Получен запрос к эндпоинту: POST /users");
         if(user.getName().isEmpty()) {
@@ -68,9 +68,7 @@ public class UserController {
             user.setFriends(new HashSet<>());
         }
         if(new ValidateUserData(user).checkAllData()) {
-            user.setId(getId());
-            userService.addUser(user);
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
+            return new ResponseEntity<>(userService.addUser(user), HttpStatus.CREATED);
         } else {
             log.warn("Запрос к эндпоинту POST /users не обработан.");
             throw new ValidationException("Одно или несколько условий не выполняются");
@@ -131,8 +129,4 @@ public class UserController {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    public int getId() {
-        this.id++;
-        return id;
-    }
 }
