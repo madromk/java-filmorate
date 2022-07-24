@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface FilmStorage {
     Film getFilmById(int id);
-    Genre getGenreById(int id);
-    Mpa getMpaRatingById(int id);
+//    Genre getGenreById(int id);
+//    Mpa getMpaRatingById(int id);
     List<Film> findAllFilms();
-    List<Genre> findAllGenres();
-    List<Mpa> findAllMpaRatings();
+//    List<Genre> findAllGenres();
+//    List<Mpa> findAllMpaRatings();
     List<Film> getPopularFilms(String count);
     Film addFilm(Film film);
     void updateFilm(Film film);

@@ -1,20 +1,15 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.InputDataException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapRow.RowTo;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 @Component("filmDbStorage")
@@ -28,45 +23,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmById(int id) {
         String sql = "SELECT * FROM films WHERE film_id = ?";
-        return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
-    }
-
-    @Override
-    public Genre getGenreById(int id) {
-        String sql = "SELECT name FROM genres WHERE category_id = ?";
-        String genreStr = jdbcTemplate.queryForObject(sql, String.class, id);
-        Genre genre = new Genre();
-        genre.setId(id);
-        genre.setName(genreStr);
-        return genre;
-    }
-
-    @Override
-    public Mpa getMpaRatingById(int id) {
-        String sql = "SELECT name FROM ratings WHERE rating_id = ?";
-        String ratingStr = jdbcTemplate.queryForObject(sql, String.class, id);
-        Mpa mpa = new Mpa();
-        mpa.setId(id);
-        mpa.setName(ratingStr);
-        return mpa;
+        return jdbcTemplate.queryForObject(sql, RowTo::mapRowToFilm, id);
     }
 
     @Override
     public List<Film> findAllFilms() {
         String sql = "SELECT * FROM films";
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
-    }
-
-    @Override
-    public List<Genre> findAllGenres() {
-        String sql = "SELECT * FROM genres ORDER BY category_id";
-        return jdbcTemplate.query(sql, this::mapRowToGenre);
-    }
-
-    @Override
-    public List<Mpa> findAllMpaRatings() {
-        String sql = "SELECT * FROM ratings ORDER BY rating_id";
-        return jdbcTemplate.query(sql, this::mapRowToMPA);
+        return jdbcTemplate.query(sql, RowTo::mapRowToFilm);
     }
 
     @Override
@@ -141,36 +104,6 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularFilms(String count) {
         String sql = "SELECT f.* FROM films AS f LEFT JOIN amountlikes AS al ON f.film_id=al.film_id " +
                 "GROUP BY f.film_id ORDER BY COUNT(al.user_id) DESC LIMIT ?";
-        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
-    }
-
-    public Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
-        String sqlForMpa = "SELECT * FROM ratings WHERE rating_id = ?";
-        Film film = Film.builder()
-                .id(resultSet.getInt("film_id"))
-                .name(resultSet.getString("name"))
-                .description(resultSet.getString("description"))
-                .duration(resultSet.getInt("duration"))
-                .releaseDate(Objects.requireNonNull(resultSet.getDate("releaseDate")).toLocalDate())
-                .mpa(jdbcTemplate.queryForObject(sqlForMpa, this::mapRowToMPA, resultSet.getInt("rating_id")))
-                .rate(resultSet.getInt("rate"))
-                .build();
-        String sqlForGenres = "select genres.category_id, genres.name from GENRES left join FILM_GENRES FG on " +
-                "GENRES.CATEGORY_ID = FG.CATEGORY_ID WHERE FG.FILM_ID = ?";
-        List<Genre> genres = jdbcTemplate.query(sqlForGenres, this::mapRowToGenre, film.getId());
-        film.setGenres(new LinkedHashSet<>(genres));
-        return film;
-    }
-    public Mpa mapRowToMPA(ResultSet resultSet, int rowNum) throws SQLException {
-        Mpa mpa = new Mpa();
-        mpa.setId(resultSet.getInt("rating_id"));
-        mpa.setName(resultSet.getString("name"));
-        return mpa;
-    }
-    public Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
-        Genre genre = new Genre();
-        genre.setId(resultSet.getInt("genres.category_id"));
-        genre.setName(resultSet.getString("genres.name"));
-        return genre;
+        return jdbcTemplate.query(sql, RowTo::mapRowToFilm, count);
     }
 }

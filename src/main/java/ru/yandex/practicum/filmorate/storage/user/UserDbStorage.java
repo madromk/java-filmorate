@@ -49,7 +49,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void updateUser(User user) {
         String sql = "UPDATE users SET name = ?, birthday = ?, email = ?, login = ? WHERE user_id = ?";
-        jdbcTemplate.update(sql, user.getName(), java.sql.Date.valueOf(user.getBirthday()), user.getEmail(), user.getLogin(), user.getId());
+        jdbcTemplate.update(sql, user.getName(), java.sql.Date.valueOf(user.getBirthday()), user.getEmail(),
+                user.getLogin(), user.getId());
     }
 
     @Override
@@ -69,9 +70,8 @@ public class UserDbStorage implements UserStorage {
     public void addFriend(int id, int friendId) {
         String sql = "INSERT INTO friends(user1_id, user2_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, id, friendId);
-        String sqlFriends2 = "select user2_id from FRIENDS where USER1_ID = ?";
+        String sqlFriends2 = "SELECT user2_id FROM friends WHERE USER1_ID = ?";
         List<Integer> friends_userId2 = jdbcTemplate.queryForList(sqlFriends2, Integer.class, friendId);
-        System.out.println(friends_userId2);
     }
 
     @Override
@@ -100,8 +100,8 @@ public class UserDbStorage implements UserStorage {
     }
     @Override
     public List<User> getAllFriend(int id) {
-        String sql = "select USERS.USER_ID, USERS.NAME, USERS.BIRTHDAY, USERS.EMAIL, USERS.LOGIN " +
-                "from USERS left join FRIENDS F on USERS.USER_ID = F.USER2_ID where USER1_ID = ?";
+        String sql = "SELECT users.user_id, users.name, users.birthday, users.email, users.login " +
+                "FROM users LEFT JOIN friends f ON users.user_id = f.user2_id WHERE user1_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToUser, id);
     }
 

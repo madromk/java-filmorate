@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.validate.ValidateFilmData;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
@@ -27,35 +26,18 @@ public class FilmController {
     }
 
     @GetMapping("/films")
-    @ResponseBody
     public List<Film> findAllFilms() {
         log.info("Получен запрос к эндпоинту: GET /films");
         return filmService.findAllFilms();
     }
 
     @GetMapping("/films/{id}")
-    @ResponseBody
     public Film getFilmByID(@PathVariable("id") int id) {
         log.info("Получен запрос к эндпоинту: GET /films/{id}");
         return filmService.getFilmById(id);
     }
 
-    @GetMapping("/genres/{id}")
-    @ResponseBody
-    public Genre getGenresById(@PathVariable("id") int id) {
-        log.info("Получен запрос к эндпоинту GET /genres/{id}");
-        return filmService.getGenreById(id);
-    }
-
-    @GetMapping("/mpa/{id}")
-    @ResponseBody
-    public Mpa getMpaRatingById(@PathVariable("id") int id) {
-        log.info("Получен запрос к эндпоинту GET /mpa/{id}");
-        return filmService.getRatingById(id);
-    }
-
     @GetMapping("/films/popular")
-    @ResponseBody
     public List<Film> getPopularFilms(@RequestParam(required = false) String count) {
         log.info("Получен запрос к эндпоинту: GET /films/popular");
         if(count != null) {
@@ -65,22 +47,7 @@ public class FilmController {
         }
     }
 
-    @GetMapping("/genres")
-    @ResponseBody
-    public List<Genre> getGenres() {
-        log.info("Получен запрос к эндпоинту: GET /genres");
-        return filmService.findAllGenres();
-    }
-
-    @GetMapping("/mpa")
-    @ResponseBody
-    public List<Mpa> getMpaRating() {
-        log.info("Получен запрос к эндпоинту: GET /mpa");
-        return filmService.findAllRatings();
-    }
-
     @PostMapping("/films")
-    @ResponseBody
     public ResponseEntity<Film> createFilm(@RequestBody Film film) {
         if(film.getAmountLikes() == null) {
             film.setAmountLikes(new HashSet<>());
@@ -95,7 +62,6 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    @ResponseBody
     public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
         if(film.getAmountLikes() == null) {
             film.setAmountLikes(new HashSet<>());

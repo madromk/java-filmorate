@@ -20,35 +20,35 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.get(id);
     }
 
-    @Override
-    public Mpa getMpaRatingById(int id) {
-        Mpa mpa = new Mpa();
-        mpa.setId(id);
-        mpa.setName(FilmRating.getNameString(id));
-        return mpa;
-    }
-
-    @Override
-    public Genre getGenreById(int id) {
-        Genre genre = new Genre();
-        genre.setId(id);
-        genre.setName(FilmGenre.getNameString(id));
-        return genre;
-    }
+//    @Override
+//    public Mpa getMpaRatingById(int id) {
+//        Mpa mpa = new Mpa();
+//        mpa.setId(id);
+//        mpa.setName(FilmRating.getNameString(id));
+//        return mpa;
+//    }
+//
+//    @Override
+//    public Genre getGenreById(int id) {
+//        Genre genre = new Genre();
+//        genre.setId(id);
+//        genre.setName(FilmGenre.getNameString(id));
+//        return genre;
+//    }
     @Override
     public List<Film> findAllFilms() {
         return new ArrayList<>(films.values());
     }
 
-    @Override
-    public List<Mpa> findAllMpaRatings() {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public List<Genre> findAllGenres() {
-        return new ArrayList<>();
-    }
+//    @Override
+//    public List<Mpa> findAllMpaRatings() {
+//        return new ArrayList<>();
+//    }
+//
+//    @Override
+//    public List<Genre> findAllGenres() {
+//        return new ArrayList<>();
+//    }
 
     @Override
     public Film addFilm(Film film) {

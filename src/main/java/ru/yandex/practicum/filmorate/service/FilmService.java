@@ -7,11 +7,10 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.film.ratingMpa.RatingMpaStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -19,10 +18,12 @@ public class FilmService {
     @Autowired
     @Qualifier("filmDbStorage")
     private FilmStorage filmStorage;
-
-//    public FilmService(FilmStorage filmStorage) {
-//        this.filmStorage = filmStorage;
-//    }
+    @Autowired
+    @Qualifier("genreDbStorage")
+    private GenreStorage genreStorage;
+    @Autowired
+    @Qualifier("ratingMpaDbStorage")
+    private RatingMpaStorage ratingMpaStorage;
 
     public void addLike(int filmId, int userId) {
         filmStorage.addLike(filmId, userId);
@@ -48,16 +49,15 @@ public class FilmService {
             log.warn("Запрос к эндпоинту GET не обработан. Жанр с таким id не найден. id = " + id);
             throw new InputDataException("Некорректный id жанра");
         }
-        return filmStorage.getGenreById(id);
+        return genreStorage.getGenreById(id);
     }
 
     public Mpa getRatingById(int id) {
-        System.out.println(2);
         if(id < 1) {
             log.warn("Запрос к эндпоинту GET не обработан. Рейтинг с таким id не найден. id = " + id);
             throw new InputDataException("Некорректный id рейтинга");
         }
-        return filmStorage.getMpaRatingById(id);
+        return ratingMpaStorage.getMpaRatingById(id);
     }
 
     public List<Film> findAllFilms() {
@@ -65,11 +65,11 @@ public class FilmService {
     }
 
     public List<Genre> findAllGenres() {
-        return filmStorage.findAllGenres();
+        return genreStorage.findAllGenres();
     }
 
     public List<Mpa> findAllRatings() {
-        return filmStorage.findAllMpaRatings();
+        return ratingMpaStorage.findAllMpaRatings();
     }
 
     public Film addFilm(Film film) {
@@ -81,7 +81,6 @@ public class FilmService {
     public boolean isContainsFilms(int id) {
         return filmStorage.isContainsFilms(id);
     }
-
 
     public FilmStorage getFilmStorage() {
         return filmStorage;

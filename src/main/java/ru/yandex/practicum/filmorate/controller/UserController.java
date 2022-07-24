@@ -58,7 +58,6 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    //@ResponseBody
     public ResponseEntity<User> createUser(@RequestBody User user) {
         log.info("Получен запрос к эндпоинту: POST /users");
         if(user.getName().isEmpty()) {
@@ -75,7 +74,6 @@ public class UserController {
         }
     }
     @PutMapping("/users")
-    @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         log.info("Получен запрос к эндпоинту: PUT /users");
@@ -118,7 +116,6 @@ public class UserController {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler
-    @ResponseBody
     public ResponseEntity<String> handleException(Exception e) {
         log.warn("При обработке запроса возникло исключение " + e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
