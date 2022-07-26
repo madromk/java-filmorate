@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dbStorage;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -73,7 +74,74 @@ public class FilmDbStorageTest {
             .genres(genres2)
             .build();
 
-    public void addFilms() {
+
+    @Test
+    public void getUserById() {
+        filmDbStorage.getFilmById(1);
+        assertEquals(film1, filmDbStorage.getFilmById(1));
+    }
+
+    @Test
+    public void getAllFilms() {
+        List<Film> films = new ArrayList<>();
+        films.add(film1);
+        films.add(film2);
+        assertEquals(films, filmDbStorage.findAllFilms());
+    }
+
+    @Test
+    public void addDeleteLikeAndGetPopularFilms() {
+       if(!userDbStorage.isContainsUser(1)) {
+           addUsers();
+        }
+        filmDbStorage.addLike(2,1);
+        filmDbStorage.addLike(2,2);
+        filmDbStorage.addLike(1,2);
+        List<Film> popFilm1 = new ArrayList<>();
+        popFilm1.add(film2);
+        popFilm1.add(film1);
+        assertEquals(popFilm1, filmDbStorage.getPopularFilms("2"));
+
+        //удаляем лайки со второго фильма и добавлем к первомую.Ожидаем что на первом месте будет фильм1
+        filmDbStorage.removeLike(2,1);
+        filmDbStorage.addLike(1,1);
+        List<Film> popFilm2 = new ArrayList<>();
+        popFilm2.add(film1);
+        popFilm2.add(film2);
+        assertEquals(popFilm2, filmDbStorage.getPopularFilms("2"));
+    }
+
+    @Test
+    public void updateFilm() {
+        film1 = Film.builder()
+                .id(1)
+                .name("Film1Update")
+                .description("description1Update")
+                .duration(120)
+                .releaseDate(LocalDate.of(2021, 5, 21))
+                .rate(10)
+                .mpa(mpa1)
+                .genres(genres1)
+                .build();
+        filmDbStorage.updateFilm(film1);
+        assertEquals(film1, filmDbStorage.getFilmById(1));
+
+        //Возвращаем значение film1 для других тестов
+        film1 = film1 = Film.builder()
+                .id(1)
+                .name("Film1")
+                .description("description1")
+                .duration(120)
+                .releaseDate(LocalDate.of(2021, 5, 21))
+                .rate(10)
+                .mpa(mpa1)
+                .genres(genres1)
+                .build();
+        filmDbStorage.updateFilm(film1);
+    }
+
+    @BeforeEach
+    private void addFilms() {
         //Заполняем жанры и рейтинг для фильма 1
         Genre genre1 = new Genre();
         genre1.setId(1);
@@ -116,88 +184,12 @@ public class FilmDbStorageTest {
         film2.setMpa(mpa2);
     }
 
-    public void addUsers() {
+    private void addUsers() {
         userDbStorage.addUser(user1);
         userDbStorage.addUser(user2);
         userDbStorage.addUser(user3);
         user1.setId(1);
         user2.setId(2);
         user3.setId(3);
-    }
-
-    @Test
-    public void getUserById() {
-        if(!filmDbStorage.isContainsFilms(1)) {
-            addFilms();
-        }
-        filmDbStorage.getFilmById(1);
-        assertEquals(film1, filmDbStorage.getFilmById(1));
-    }
-
-    @Test
-    public void getAllFilms() {
-        if(!filmDbStorage.isContainsFilms(1)) {
-            addFilms();
-        }
-        List<Film> films = new ArrayList<>();
-        films.add(film1);
-        films.add(film2);
-        assertEquals(films, filmDbStorage.findAllFilms());
-    }
-
-    @Test
-    public void addDeleteLikeAndGetPopularFilms() {
-        if(!userDbStorage.isContainsUser(1) || !filmDbStorage.isContainsFilms(1)) {
-            addUsers();
-            addFilms();
-        }
-        filmDbStorage.addLike(2,1);
-        filmDbStorage.addLike(2,2);
-        filmDbStorage.addLike(1,2);
-        List<Film> popFilm1 = new ArrayList<>();
-        popFilm1.add(film2);
-        popFilm1.add(film1);
-        assertEquals(popFilm1, filmDbStorage.getPopularFilms("2"));
-
-        //удаляем лайки со второго фильма и добавлем к первомую.Ожидаем что на первом месте будет фильм1
-        filmDbStorage.removeLike(2,1);
-        filmDbStorage.addLike(1,1);
-        List<Film> popFilm2 = new ArrayList<>();
-        popFilm2.add(film1);
-        popFilm2.add(film2);
-        assertEquals(popFilm2, filmDbStorage.getPopularFilms("2"));
-    }
-
-    @Test
-    public void updateFilm() {
-        if(!filmDbStorage.isContainsFilms(1)) {
-            addFilms();
-        }
-
-        film1 = Film.builder()
-                .id(1)
-                .name("Film1Update")
-                .description("description1Update")
-                .duration(120)
-                .releaseDate(LocalDate.of(2021, 5, 21))
-                .rate(10)
-                .mpa(mpa1)
-                .genres(genres1)
-                .build();
-        filmDbStorage.updateFilm(film1);
-        assertEquals(film1, filmDbStorage.getFilmById(1));
-
-        //Возвращаем значение film1 для других тестов
-        film1 = film1 = Film.builder()
-                .id(1)
-                .name("Film1")
-                .description("description1")
-                .duration(120)
-                .releaseDate(LocalDate.of(2021, 5, 21))
-                .rate(10)
-                .mpa(mpa1)
-                .genres(genres1)
-                .build();
-        filmDbStorage.updateFilm(film1);
     }
 }

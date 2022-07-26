@@ -6,7 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.InputDataException;
-import ru.yandex.practicum.filmorate.mapRow.RowTo;
+import ru.yandex.practicum.filmorate.storage.dbStringMapping.DbStringMapping;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.PreparedStatement;
@@ -23,13 +23,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmById(int id) {
         String sql = "SELECT * FROM films WHERE film_id = ?";
-        return jdbcTemplate.queryForObject(sql, RowTo::mapRowToFilm, id);
+        return jdbcTemplate.queryForObject(sql, DbStringMapping::mapRowToFilm, id);
     }
 
     @Override
     public List<Film> findAllFilms() {
         String sql = "SELECT * FROM films";
-        return jdbcTemplate.query(sql, RowTo::mapRowToFilm);
+        return jdbcTemplate.query(sql, DbStringMapping::mapRowToFilm);
     }
 
     @Override
@@ -104,6 +104,6 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularFilms(String count) {
         String sql = "SELECT f.* FROM films AS f LEFT JOIN amountlikes AS al ON f.film_id=al.film_id " +
                 "GROUP BY f.film_id ORDER BY COUNT(al.user_id) DESC LIMIT ?";
-        return jdbcTemplate.query(sql, RowTo::mapRowToFilm, count);
+        return jdbcTemplate.query(sql, DbStringMapping::mapRowToFilm, count);
     }
 }

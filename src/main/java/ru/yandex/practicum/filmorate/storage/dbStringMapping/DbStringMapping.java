@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.mapRow;
+package ru.yandex.practicum.filmorate.storage.dbStringMapping;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -12,11 +12,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 @Component
-public class RowTo {
+public class DbStringMapping {
     private static JdbcTemplate jdbcTemplate;
 
-    public RowTo (JdbcTemplate jdbcTemplate) {
-        RowTo.jdbcTemplate = jdbcTemplate;
+    public DbStringMapping(JdbcTemplate jdbcTemplate) {
+        DbStringMapping.jdbcTemplate = jdbcTemplate;
     }
 
     public static Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
@@ -27,12 +27,12 @@ public class RowTo {
                 .description(resultSet.getString("description"))
                 .duration(resultSet.getInt("duration"))
                 .releaseDate(Objects.requireNonNull(resultSet.getDate("releaseDate")).toLocalDate())
-                .mpa(jdbcTemplate.queryForObject(sqlForMpa, RowTo::mapRowToMPA, resultSet.getInt("rating_id")))
+                .mpa(jdbcTemplate.queryForObject(sqlForMpa, DbStringMapping::mapRowToMPA, resultSet.getInt("rating_id")))
                 .rate(resultSet.getInt("rate"))
                 .build();
         String sqlForGenres = "select genres.category_id, genres.name from GENRES left join FILM_GENRES FG on " +
                 "GENRES.CATEGORY_ID = FG.CATEGORY_ID WHERE FG.FILM_ID = ?";
-        List<Genre> genres = jdbcTemplate.query(sqlForGenres, RowTo::mapRowToGenre, film.getId());
+        List<Genre> genres = jdbcTemplate.query(sqlForGenres, DbStringMapping::mapRowToGenre, film.getId());
         film.setGenres(new LinkedHashSet<>(genres));
         return film;
     }

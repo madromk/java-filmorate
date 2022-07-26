@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dbStorage;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -40,29 +41,12 @@ public class UserDbStorageTest {
             .birthday(LocalDate.of(1989, 10, 01))
             .build();
 
-
-    public void addUsers() {
-        userDbStorage.addUser(user1);
-        userDbStorage.addUser(user2);
-        userDbStorage.addUser(user3);
-        user1.setId(1);
-        user2.setId(2);
-        user3.setId(3);
-    }
-
-
     @Test
     public void getUserById() {
-        if(!userDbStorage.isContainsUser(1)) {
-            addUsers();
-        }
         assertEquals(user1, userDbStorage.getUserById(1));
     }
     @Test
     public void getAllUsers() {
-        if(!userDbStorage.isContainsUser(1)) {
-            addUsers();
-        }
         List<User> users = new ArrayList<>();
         users.add(user1);
         users.add(user2);
@@ -72,9 +56,6 @@ public class UserDbStorageTest {
 
     @Test
     public void updateUser() {
-        if(!userDbStorage.isContainsUser(1)) {
-            addUsers();
-        }
         User updateUser1 = User.builder()
                 .name("Update name")
                 .email("email@yandex.ru")
@@ -96,17 +77,11 @@ public class UserDbStorageTest {
 
     @Test
     public void isContainsUser() {
-        if(!userDbStorage.isContainsUser(1)) {
-            addUsers();
-        }
         assertTrue(userDbStorage.isContainsUser(1));
     }
 
     @Test
     public void allAboutFriends() {
-        if(!userDbStorage.isContainsUser(1)) {
-            addUsers();
-        }
         //Добавление в друзья и показ друзей
         userDbStorage.addFriend(1, 2);
         userDbStorage.addFriend(2, 1);
@@ -125,5 +100,15 @@ public class UserDbStorageTest {
         //Удаление друга
         userDbStorage.deleteFriend(2,1);
         assertEquals(new ArrayList<User>(), userDbStorage.getAllFriend(2));
+    }
+
+    @BeforeEach
+    private void addUsers() {
+        userDbStorage.addUser(user1);
+        userDbStorage.addUser(user2);
+        userDbStorage.addUser(user3);
+        user1.setId(1);
+        user2.setId(2);
+        user3.setId(3);
     }
 }

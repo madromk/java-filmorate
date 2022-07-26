@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.ratingMpa.RatingMpaDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.ratingMpa.RatingMpaStorage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
@@ -24,9 +27,31 @@ public class RatingMpaDbStorageTest {
         mpa.setName("G");
         assertEquals(mpa, ratingMpaDbStorage.getMpaRatingById(1));
     }
-
     @Test
     public void getAllGenres() {
-        System.out.println(ratingMpaDbStorage.findAllMpaRatings());
+        List<Mpa> ratings = new ArrayList<>();
+        int id = 1;
+        Mpa mpa1 = new Mpa();
+        mpa1.setId(id++);
+        mpa1.setName("G");
+        ratings.add(mpa1);
+        Mpa mpa2 = new Mpa();
+        mpa2.setId(id++);
+        mpa2.setName("PG");
+        ratings.add(mpa2);
+        Mpa mpa3 = new Mpa();
+        mpa3.setId(id++);
+        mpa3.setName("PG-13");
+        ratings.add(mpa3);
+        Mpa mpa4 = new Mpa();
+        mpa4.setId(id++);
+        mpa4.setName("R");
+        ratings.add(mpa4);
+        Mpa mpa5 = new Mpa();
+        mpa5.setId(id++);
+        mpa5.setName("NC-17");
+        ratings.add(mpa5);
+
+        assertEquals(ratings, ratingMpaDbStorage.findAllMpaRatings());
     }
 }
